@@ -10,10 +10,12 @@ app.directive(
 			// This is the one with the insertion line next to it.
 			var activeDropIndicator = null;
 
-			// Since drag events are a nightmare to work with, we need to handle the
-			// "leave" event with a bit of a delay. When this timer goes off, it will
-			// reset the drag-event handlers on the UI.
-			var dragleaveListTimer = null;
+			// Since drag events are a nightmare to work with (for real, I mean like 
+			// really for real, they are horrible horrible things), we need to hack the
+			// way we handle the de-activating of the element state. Instead of a true 
+			// leave event, we're actually just going to use a timer that will be 
+			// cancelled by the "drag" event, which fires continuously.
+			var activeStateTeardownTimer = null;
 
 			// Wiki: https://github.com/moxiecode/moxie/wiki/FileDrop
 			var dropzone = new mOxie.FileDrop({
@@ -45,30 +47,6 @@ app.directive(
 			// ---
 			// PRIVATE METHODS.
 			// ---
-
-
-			// I handle dragevent on the document. If the event is triggered outside of 
-			// the current element, then we will fallback to triggering a "leave" event
-			// on the element so as to make up for the fact that working with the drag
-			// events is a special kind of hell.
-			function handleDocumentDragEnterLeaveHack( event ) {
-
-				// 
-				if ( ! activeDropIndicator ) {
-
-					return;
-
-				}
-
-				if ( $( event.target ).closest( element ).length ) {
-
-					return;
-
-				}
-
-				element.triggerHandler( "dragleave" );
-			
-			}
 
 
 			// Since you can initiate drag-events from simply clicking and dragging on 
@@ -135,49 +113,50 @@ app.directive(
 			}
 
 
+			// I restart the activate state teardown timer, clearing it and then starting
+			// it again.
+			function restartActiveStateTeardownTimer() {
+
+				stopActiveStateTeardownTimer();
+				startActiveStateTeardownTimer();
+
+			}
+
+
 			// I set up the active state bindings.
 			function setupActiveState() {
 
 				element.addClass( "pending-drop" );
 
 				// Since the drag events are basically a NIGHTMARE to work with, we can't
-				// simply bind to the dragleave event. Instead, we have to give it a 
-				// slight delay to give any subsequent drag events the ability to cancel
-				// the "leave". This is especially annoying cross-browser.
+				// simply bind to the dragleave event and deactivate the state. Instead, 
+				// we have to give the teardown a slight delay such that that a subsequent
+				// "dragover" event may have a chance to cancel it.
 				element.on(
 					"dragleave", 
 					function handleDragleaveList( event ) {
 
-						console.log( "drag LEAVE element", now );
-
-						clearTimeout( dragleaveListTimer );
-
-						dragleaveListTimer = setTimeout(
-							function() {
-
-								teardownActiveState();
-								setupWaitingState();
-
-							},
-							100
-						);
-
+						restartActiveStateTeardownTimer();
+						
 					}
 				);
 
-
-				// Since the dragenter event is annoying to work with, especially cross-
-				// browser, we're just going to use the dragover event. However, this 
-				// event fires a LOT; as such, we need to ignore any duplicate events 
-				// fired on the same element.
+				// Since the dragenter and dragleave events are impossible to work with 
+				// across the different browsers, we're going to rely on the fact that
+				// the dragover event fires continuously on the target element. Each time
+				// this fires, we'll restart the "teardown" timer.
+				// --
+				// NOTE: This is horribly inefficient, but I don't know what else to do.
 				element.on( 
 					"dragover", 
 					"div.drop-indicator div.left, div.drop-indicator div.right", 
 					function( event ) {
 
-						// If this is just a repeat event, ignore it.
-						if ( activeDropIndicator && activeDropIndicator.is( this ) ) {
+						restartActiveStateTeardownTimer();
 
+						// If this is just a repeat event, ignore it (optimization).
+						if ( activeDropIndicator && ( activeDropIndicator[ 0 ] === this ) ) {
+							
 							return;
 
 						// Turn off the previous drop indicator.
@@ -189,30 +168,8 @@ app.directive(
 
 						activeDropIndicator = $( this ).addClass( "drop-here" );
 
-						// Clear any currently active clear-timer (to make sure the 
-						// pending-drop state doesn't close while we're still interacting
-						// with the list).
-						clearTimeout( dragleaveListTimer );
-
 					}
 				);
-
-
-				$document.on( "dragleave",
-					function( event ) {
-
-						console.log( "DOC leave", event.target, event.relatedTarget );
-
-					}
-				);
-
-
-				// This is a HACK to work with the janky-ass drag events. If we dragover
-				// the item very fast, then we get the dragover event, but NOT the 
-				// dragleave event. As such, we need a fallback to listen on the 
-				// $document for a drag event
-				// $document.on( "dragenter", handleDocumentDragEnterLeaveHack );
-				// $document.on( "dragleave", handleDocumentDragEnterLeaveHack );
 
 			}
 
@@ -232,6 +189,32 @@ app.directive(
 			}
 
 
+			// I start the active state teardown timer.
+			function startActiveStateTeardownTimer() {
+
+				activeStateTeardownTimer = setTimeout(
+					function() {
+
+						teardownActiveState();
+						setupWaitingState();
+
+					},
+					// This needs to be big enough to allow for the drag event to fire
+					// at least once within the delayed interval.
+					100 
+				);
+
+			}
+
+
+			// I clear the active state teardown timer.
+			function stopActiveStateTeardownTimer() {
+
+				clearTimeout( activeStateTeardownTimer );
+
+			}
+
+
 			// I teardown the active state bindings.
 			function teardownActiveState() {
 
@@ -239,9 +222,6 @@ app.directive(
 					.removeClass( "pending-drop" )
 					.off( "dragover dragleave" )
 				;
-
-				$document.off( "dragenter", handleDocumentDragEnterLeaveHack );
-				$document.off( "dragleave", handleDocumentDragEnterLeaveHack );
 
 				// If there is an active indicator, clear it.
 				if ( activeDropIndicator ) {

@@ -87,7 +87,7 @@ div.m-images ul.images div.drop-indicator {
   top: -10px;
 }
 div.m-images ul.images div.drop-indicator div.left {
-  background-color: rgba(255, 255, 255, 0.41);
+  background-color: rgba(255, 255, 255, 0.01);
   bottom: 0px ;
   left: 0px ;
   position: absolute ;
@@ -108,7 +108,7 @@ div.m-images ul.images div.drop-indicator div.left:before {
   width: 4px ;
 }
 div.m-images ul.images div.drop-indicator div.right {
-  background-color: rgba(255, 255, 255, 0.41);
+  background-color: rgba(255, 255, 255, 0.01);
   bottom: 0px ;
   position: absolute ;
   right: 0px ;
