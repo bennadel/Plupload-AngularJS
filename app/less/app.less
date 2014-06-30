@@ -1,0 +1,170 @@
+
+body {
+	background-color: #FFFFFF ;
+	color: #333333 ;
+	font-family: helvetica, verdana, arial ;
+	margin: 10px 10px 10px 10px ;
+} // END: body.
+
+div.m-uploader {
+	background-color: #F0F0F0 ;
+	border: 2px dashed #CCCCCC ;
+	border-radius: 4px 4px 4px 4px ;
+	height: 100px ;
+	margin: 20px 0px 20px 0px ;
+
+	div.instructions {
+		height: 100px ;
+		line-height: 100px ;
+		text-align: center ;
+	}
+
+	ul.queue {
+		list-style-type: none ;
+		margin: 0px 0px 0px 0px ;
+		padding: 15px 15px 15px 15px ;
+
+		li.item {
+			border: 1px solid #CCCCCC ;
+			border-radius: 3px 3px 3px 3px ;
+			height: 50px ;
+			float: left ;
+			font-size: 14px ;
+			font-weight: 800 ;
+			line-height: 50px ;
+			margin: 0px 10px 10px 0px ;
+			text-align: center ;
+			width: 50px ;
+		}
+
+		&:after {
+			content: "" ;
+			display: block ;
+			clear: both ;
+			height: 0px ;
+		}
+	}
+} // END: div.m-images.
+
+div.m-images {
+	position: relative ;
+
+	ul.images {
+		list-style-type: none ;
+		margin: 0px 0px 0px 0px ;
+		padding: 0px 0px 0px 0px ;
+
+		li.image {
+			background-color: #FAFAFA ;
+			border: 1px solid #CCCCCC ;
+			border-radius: 3px 3px 3px 3px ;
+			float: left ;
+			height: 154px ;
+			margin: 14px 14px 0px 0px ;
+			padding: 15px 15px 1px 15px ;
+			position: relative ;
+			width: 150px ;
+		}
+
+		div.thumbnail {
+			border: 1px solid #E0E0E0 ;
+			height: 115px ;
+			margin: 0px 0px 10px 0px ;
+			overflow: hidden ;
+			width: 148px ;
+
+			img {
+				border-width: 0px 0px 0px 0px ;
+				display: block ;
+				width: 148px ;
+			}
+		}
+
+		div.name {
+			font-size: 13px ;
+			font-weight: bold ;
+			overflow: hidden ;
+			text-overflow: ellipsis ;
+			white-space: nowrap ;
+			width: 150px ;
+		}
+
+		div.drop-indicator {
+			bottom: -10px ;
+			display: none ;
+			left: -10px ;
+			position: absolute ;
+			right: -10px ;
+			top: -10px ;
+
+			div.left {
+				background-color: rgba( 255, 255, 255, .41 ) ;
+				bottom: 0px ;
+				left: 0px ;
+				position: absolute ;
+				top: 0px ;
+				width: 50% ;
+
+				&:before {
+					background-color: #FF33CC ;
+					border-radius: 2px 2px 2px 2px ;
+					bottom: 4px ;
+					content: "" ;
+					display: none ;
+					font-size: 1px ;
+					left: 0px ;
+					overflow: hidden ;
+					position: absolute ;
+					top: 4px ;
+					width: 4px ;
+				}
+			}
+
+			div.right {
+				background-color: rgba( 255, 255, 255, .41 ) ;
+				bottom: 0px ;
+				position: absolute ;
+				right: 0px ;
+				top: 0px ;
+				width: 50% ;
+
+				&:before {
+					background-color: #FF33CC ;
+					border-radius: 2px 2px 2px 2px ;
+					bottom: 4px ;
+					content: "" ;
+					display: none ;
+					font-size: 1px ;
+					overflow: hidden ;
+					position: absolute ;
+					right: 0px ;
+					top: 4px ;
+					width: 4px ;
+				}
+			}
+
+			div.drop-here {
+				&:before {
+					display: block ;
+				}
+			}
+		}
+
+		&:after {
+			content: "" ;
+			display: block ;
+			clear: both ;
+			height: 0px ;
+		}
+	}
+
+	// div.m-images -- variations.
+
+	&.pending-drop {
+		ul.images {
+			div.drop-indicator {
+				display: block ;
+			}
+		}
+	}
+} // END: div.m-images.
