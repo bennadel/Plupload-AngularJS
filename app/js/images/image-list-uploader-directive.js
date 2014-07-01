@@ -1,7 +1,7 @@
 
 app.directive(
 	"bnImageListUploader",
-	function( $rootScope, mOxie, naturalSort, $document ) {
+	function( $document, $rootScope, mOxie, naturalSort ) {
 
 		// I bind the JavaScript events to the scope.
 		function link( $scope, element, attributes ) {
@@ -156,7 +156,7 @@ app.directive(
 
 						// If this is just a repeat event, ignore it (optimization).
 						if ( activeDropIndicator && ( activeDropIndicator[ 0 ] === this ) ) {
-							
+
 							return;
 
 						// Turn off the previous drop indicator.

@@ -6,16 +6,23 @@ body {
 	margin: 10px 10px 10px 10px ;
 } // END: body.
 
+a[ ng-click ] {
+	cursor: pointer ;
+	text-decoration: underline ;
+}
+
 div.m-uploader {
 	background-color: #F0F0F0 ;
 	border: 2px dashed #CCCCCC ;
 	border-radius: 4px 4px 4px 4px ;
+	cursor: pointer ;
 	height: 100px ;
 	margin: 20px 0px 20px 0px ;
 
 	div.instructions {
+		font-size: 20px ;
 		height: 100px ;
-		line-height: 100px ;
+		line-height: 104px ;
 		text-align: center ;
 	}
 
@@ -25,13 +32,14 @@ div.m-uploader {
 		padding: 15px 15px 15px 15px ;
 
 		li.item {
+			background-color: #FFFFFF ;
 			border: 1px solid #CCCCCC ;
 			border-radius: 3px 3px 3px 3px ;
 			height: 50px ;
 			float: left ;
 			font-size: 14px ;
 			font-weight: 800 ;
-			line-height: 50px ;
+			line-height: 52px ;
 			margin: 0px 10px 10px 0px ;
 			text-align: center ;
 			width: 50px ;
@@ -43,6 +51,12 @@ div.m-uploader {
 			clear: both ;
 			height: 0px ;
 		}
+	}
+
+	// div.m-uploader -- variations.
+
+	&.uploading {
+		border-color: #999999 ;
 	}
 } // END: div.m-images.
 
@@ -64,6 +78,14 @@ div.m-images {
 			padding: 15px 15px 1px 15px ;
 			position: relative ;
 			width: 150px ;
+
+			// li.image -- variations.
+
+			&:hover {
+				a.delete {
+					display: block ;
+				}
+			}
 		}
 
 		div.thumbnail {
@@ -87,6 +109,23 @@ div.m-images {
 			text-overflow: ellipsis ;
 			white-space: nowrap ;
 			width: 150px ;
+		}
+
+		a.delete {
+			background-color: #FFFFFF ;
+			border: 2px solid #262626 ;
+			border-radius: 20px 20px 20px 20px ;
+			color: #262626 ;
+			display: none ;
+			font-weight: 800 ;
+			height: 20px ;
+			line-height: 20px ;
+			position: absolute ;
+			right: 6px ;
+			text-align: center ;
+			text-decoration: none ;
+			top: 6px ;
+			width: 20px ;
 		}
 
 		div.drop-indicator {

@@ -4,7 +4,7 @@
 	<meta charset="utf-8" />
 
 	<title>
-		Plupload And AngularJS
+		Using Plupload To Upload Files In AngularJS
 	</title>
 
 	<link rel="stylesheet" type="text/css" href="css/app.css"></link>
@@ -12,7 +12,7 @@
 <body ng-app="PluploadApp">
 
 	<h1>
-		Plupload And AngularJS
+		Using Plupload To Upload Files In AngularJS
 	</h1>
 
 	<div ng-controller="ImagesController">
@@ -30,7 +30,7 @@
 				<ul ng-switch-when="true" class="queue">
 					<li ng-repeat="item in queue track by item.id" class="item">
 
-						{{ item.percent }}
+						{{ item.percent }}%
 
 					</li>
 				</ul>
@@ -38,7 +38,7 @@
 				<!-- Non-active upload instructions. -->
 				<div ng-switch-when="false" class="instructions">
 
-					Upload Images
+					Select Files &mdash; or &mdash; Drag-n-Drop Files
 
 				</div>
 
@@ -62,6 +62,8 @@
 						{{ image.clientFile }}
 					</div>
 
+					<a ng-click="deleteImage( image )" class="delete">&times;</a>
+
 					<!-- 
 						This is here to make the insert into the list much easier. 
 						Without these handles, you have to actually do "math" to figure
@@ -83,7 +85,8 @@
 
 	<!-- Vendor Scripts. -->
 	<script type="text/javascript" src="vendor/plupload/plupload.full.min.js"></script>
-	<!-- 
+	<!-- Dev script for when you need to see the inner worksing of Plupload. -->
+	<!--
 	<script type="text/javascript" src="vendor/plupload/moxie.js"></script>
 	<script type="text/javascript" src="vendor/plupload/plupload.dev.js"></script>
 	-->

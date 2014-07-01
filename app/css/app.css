@@ -4,16 +4,22 @@ body {
   font-family: helvetica, verdana, arial ;
   margin: 10px 10px 10px 10px ;
 }
+a[ng-click] {
+  cursor: pointer ;
+  text-decoration: underline ;
+}
 div.m-uploader {
   background-color: #F0F0F0 ;
   border: 2px dashed #CCCCCC ;
   border-radius: 4px 4px 4px 4px ;
+  cursor: pointer ;
   height: 100px ;
   margin: 20px 0px 20px 0px ;
 }
 div.m-uploader div.instructions {
+  font-size: 20px ;
   height: 100px ;
-  line-height: 100px ;
+  line-height: 104px ;
   text-align: center ;
 }
 div.m-uploader ul.queue {
@@ -22,13 +28,14 @@ div.m-uploader ul.queue {
   padding: 15px 15px 15px 15px ;
 }
 div.m-uploader ul.queue li.item {
+  background-color: #FFFFFF ;
   border: 1px solid #CCCCCC ;
   border-radius: 3px 3px 3px 3px ;
   height: 50px ;
   float: left ;
   font-size: 14px ;
   font-weight: 800 ;
-  line-height: 50px ;
+  line-height: 52px ;
   margin: 0px 10px 10px 0px ;
   text-align: center ;
   width: 50px ;
@@ -38,6 +45,9 @@ div.m-uploader ul.queue:after {
   display: block ;
   clear: both ;
   height: 0px ;
+}
+div.m-uploader.uploading {
+  border-color: #999999 ;
 }
 div.m-images {
   position: relative ;
@@ -58,6 +68,9 @@ div.m-images ul.images li.image {
   position: relative ;
   width: 150px ;
 }
+div.m-images ul.images li.image:hover a.delete {
+  display: block ;
+}
 div.m-images ul.images div.thumbnail {
   border: 1px solid #E0E0E0 ;
   height: 115px ;
@@ -77,6 +90,22 @@ div.m-images ul.images div.name {
   text-overflow: ellipsis ;
   white-space: nowrap ;
   width: 150px ;
+}
+div.m-images ul.images a.delete {
+  background-color: #FFFFFF ;
+  border: 2px solid #262626 ;
+  border-radius: 20px 20px 20px 20px ;
+  color: #262626 ;
+  display: none ;
+  font-weight: 800 ;
+  height: 20px ;
+  line-height: 20px ;
+  position: absolute ;
+  right: 6px ;
+  text-align: center ;
+  text-decoration: none ;
+  top: 6px ;
+  width: 20px ;
 }
 div.m-images ul.images div.drop-indicator {
   bottom: -10px;

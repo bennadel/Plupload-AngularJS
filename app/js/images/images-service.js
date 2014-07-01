@@ -22,6 +22,9 @@ app.service(
 				url: "api/index.cfm",
 				params: {
 					action: "delete"
+				},
+				data: {
+					id: id
 				}
 			});
 
@@ -56,7 +59,7 @@ app.service(
 		function handleError( response ) {
 
 			// The API response from the server should be returned in a nomralized 
-			// format. However, if the request was not handled by the server (or what
+			// format. However, if the request was not handled by the server (or was
 			// not handles properly - ex. server error), then we may have to normalize
 			// it on our end, as best we can.
 			if (
@@ -64,12 +67,17 @@ app.service(
 				! response.data.message
 				) {
 
-				return( $q.reject( "An unknown error occurred." ) );
+				return( 
+					$q.reject({
+						code: -1,
+						message: "An unknown error occurred."
+					}) 
+				);
 
 			}
 
 			// Otherwise, use expected error message.
-			return( $q.reject( response.data.message ) );
+			return( $q.reject( response.data ) );
 
 		}
 

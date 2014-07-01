@@ -1,6 +1,6 @@
 component
 	output = false
-	hint = "I model the collection of images."
+	hint = "I model the collection of images. NOTE: Image storage and URLs are managed outside of this model."
 	{
 
 	/**
@@ -75,8 +75,8 @@ component
 	* @output false
 	*/
 	public void function deleteImage( required numeric id ) {
-
-		for ( var i = 1 ; i < arrayLen( images ) ; i++ ) {
+		
+		for ( var i = 1 ; i <= arrayLen( images ) ; i++ ) {
 
 			if ( images[ i ].id == id ) {
 

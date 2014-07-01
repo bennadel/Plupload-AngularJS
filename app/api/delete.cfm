@@ -8,8 +8,8 @@
 	// Delete the image "record".
 	application.images.deleteImage( image.id );
 
-	// Delete the image binary.
-	fileDelete( expandPath( "/uploads/#images.serverFile#" ) );
+	// Delete the actual image binary.
+	fileDelete( expandPath( "/uploads/#image.serverFile#" ) );
 
 	// Prepare API response.
 	response.data = true;

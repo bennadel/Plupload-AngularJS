@@ -1,15 +1,19 @@
 
 app.directive(
 	"bnImageUploader",
-	function( $rootScope, $document, plupload, mOxie, naturalSort ) {
+	function( $window, $document, $rootScope, $q, plupload, mOxie, naturalSort ) {
 
 		// I model the queue of files exposed by the uploader to the child DOM.
 		function PublicQueue() {
 
+			// I contain the actual data structure that is exposed to the user.
 			var queue = [];
+
+			// I index the currently queued files by ID for easy reference.
 			var fileIndex = {};
 
 
+			// I add the given file to the public queue.
 			queue.addFile = function( file ) {
 
 				var item = {
@@ -17,27 +21,30 @@ app.directive(
 					name: file.name,
 					size: file.size,
 					loaded: file.loaded,
-					percent: file.percent.toFixed( 1 ),
+					percent: file.percent.toFixed( 0 ),
 					status: file.status,
-					isQueued: ( file.status === plupload.QUEUED ),
-					isUploading: ( file.status === plupload.UPLOADING ),
-					isFailed: ( file.status === plupload.FAILED ),
-					isDone: ( file.status === plupload.DONE )
+					isUploading: ( file.status === plupload.UPLOADING )
 				};
 
-				fileIndex[ item.id ] = item;
-
-				this.push( item );
+				this.push( fileIndex[ item.id ] = item );
 
 			};
 
 
+			// I rebuild the queue. 
+			// --
+			// NOTE: Currently, the implementation of this doesn't take into account any
+			// optimizations for rendering. If you use "track by" in your ng-repeat, 
+			// though, you should be ok.
 			queue.rebuild = function( files ) {
 
+				// Empty the queue.
 				this.splice( 0, this.length );
 
+				// Cleaer the internal index.
 				fileIndex = {};
 
+				// Add each file to the queue.
 				for ( var i = 0, length = files.length ; i < length ; i++ ) {
 
 					this.addFile( files[ i ] );
@@ -47,22 +54,24 @@ app.directive(
 			};
 
 
+			// I update the percent loaded and state for the given file.
 			queue.updateFile = function( file ) {
 
-				if ( fileIndex.hasOwnProperty( file.id ) ) {
+				// If we can't find this file, then ignore -- this can happen if the 
+				// progress event is fired AFTER the upload event (which it does 
+				// sometimes).
+				if ( ! fileIndex.hasOwnProperty( file.id ) ) {
 
-					var item = fileIndex[ file.id ];
-
-					item.percent = file.percent.toFixed( 1 );
-					item.loaded = file.loaded;
-					item.percent = file.percent.toFixed( 1 );
-					item.status = file.status;
-					item.isQueued = ( file.status === plupload.QUEUED );
-					item.isUploading = ( file.status === plupload.UPLOADING );
-					item.isFailed = ( file.status === plupload.FAILED );
-					item.isDone = ( file.status === plupload.DONE );
+					return;
 
 				}
+
+				var item = fileIndex[ file.id ];
+
+				item.loaded = file.loaded;
+				item.percent = file.percent.toFixed( 0 );
+				item.status = file.status;
+				item.isUploading = ( file.status === plupload.UPLOADING );
 
 			};
 
@@ -75,8 +84,8 @@ app.directive(
 		// I bind the JavaScript events to the scope.
 		function link( $scope, element, attributes ) {
 
-			// The uploader has to refernece the browse button using an ID. Rather than
-			// crudding up the HTML, just insert it here.
+			// The uploader has to refernece the various elements using IDs. Rather than
+			// crudding up the HTML, just insert the values dynamically here.
 			element
 				.attr( "id", "primaryUploaderContainer" )
 				.find( "div.dropzone" )
@@ -88,14 +97,18 @@ app.directive(
 
 				// For this demo, we're only going to use the html5 runtime. I don't 
 				// want to have to deal with people who require flash - not this time, 
-				// I'm tired of it.
+				// I'm tired of it; plus, much of the point of this demo is to work with
+				// the drag-n-drop, which isn't available in Flash.
 				runtimes: "html5",
 
 				// Upload the image to the API.
 				url: "api/index.cfm?action=upload",
 
-				// Set the name of file field (that conatins the upload).
+				// Set the name of file field (that contains the upload).
 				file_data_name: "file",
+
+				// The container, into which to inject the Input shim.
+				container: "primaryUploaderContainer",
 
 				// The ID of the drop-zone element.
 				drop_element: "primaryUploaderDropzone",
@@ -103,8 +116,6 @@ app.directive(
 				// To enable click-to-select-files, you can provide a browse button. 
 				// We can use the same one as the drop zone.
 				browse_button: "primaryUploaderDropzone",
-
-				container: "primaryUploaderContainer",
 
 				// We don't have any parameters yet; but, let's create the object now
 				// so that we can simply consume it later in the BeforeUpload event.
@@ -127,6 +138,13 @@ app.directive(
 			// used to render the items being uploaded.
 			$scope.queue = new PublicQueue();
 
+			// Wrap the window instance so we can get easy event binding.
+			var win = $( $window );
+
+			// When the window is resized, we'll have to update the dimensions of the 
+			// input shim.
+			win.on( "resize", handleWindowResize );
+
 			// Listen for drop events from other dropzones.
 			$scope.$on( "imageFilesDropped", handleExternalFilesDropped );
 
@@ -135,7 +153,9 @@ app.directive(
 				"$destroy",
 				function() {
 
-					// ...
+					win.off( "resize", handleWindowResize );
+					
+					uploader.destroy();
 
 				}
 			);
@@ -176,7 +196,7 @@ app.directive(
 			}
 
 
-			// I handle the event in which a user had dropped files onto an attached 
+			// I handle the event in which a user has dropped files onto an attached 
 			// dropzone - we just need to take those files and add them to the uploader.
 			// This will initiate the normal files-added / queue-changed workflow.
 			function handleExternalFilesDropped( event, files ) {
@@ -215,20 +235,11 @@ app.directive(
 
 				// END: JANKY SORTING HACK ------------------------------------------- //
 				// ------------------------------------------------------------------- //
+
+				// Tell AngularJS that something has changed (the public queue will have 
+				// been updated at this point).
+				$scope.$apply();
 				
-				// $scope.$apply(
-				// 	function() {
-
-				// 		// Show the client-side preview using the loaded File.
-				// 		for ( var i = 0, length = files.length ; i < length ; i++ ) {
-
-				// 			// showImagePreview( files[ i ] );
-
-				// 		}
-
-				// 	}
-				// );
-
 			}
 
 
@@ -256,10 +267,6 @@ app.directive(
 
 			// I handle the init event. At this point, we will know which runtime has 
 			// loaded, and whether or not drag-drop functionality is supported.
-			// --
-			// NOTE: For this build of Plupload, I had to switch from using the "Init"
-			// event to the "PostInit" in order for the "dragdrop" feature to be 
-			// correct defined.
 			function handleInit( uploader, params ) {
 
 				// console.log( "Initialization complete." );
@@ -269,7 +276,9 @@ app.directive(
 
 
 			// I handle the queue changed event. When the queue changes, it gives us an
-			// opportunity to programmatically start the upload process.
+			// opportunity to programmatically start the upload process. This will be 
+			// triggered when files are both added to or removed (programmatically) from
+			// the list (respectively).
 			function handleQueueChanged( uploader ) {
 
 				if ( uploader.files.length && isNotUploading() ){
@@ -288,18 +297,21 @@ app.directive(
 
 				if ( isUploading() ) {
 
-					// dom.uploader.addClass( "uploading" );
+					element.addClass( "uploading" );
 
 				} else {
 
-					// dom.uploader.removeClass( "uploading" );
+					element.removeClass( "uploading" );
 
 				}
 
 			}
 
 
-			// I get called when progress is made on the given file.
+			// I get called when upload progress is made on the given file.
+			// --
+			// CAUTION: This may get called one more time after the file has actually
+			// been fully uploaded AND the uploaded event has already been called.
 			function handleUploadProgress( uploader, file ) {
 
 				$scope.$apply(
@@ -309,6 +321,15 @@ app.directive(
 
 					}
 				);
+
+			}
+
+
+			// I handle the resizing of the browser window, which causes a resizing of 
+			// the input-shim used by the uploader.
+			function handleWindowResize( event ) {
+
+				uploader.refresh();
 
 			}
 
@@ -325,58 +346,6 @@ app.directive(
 			function isUploading() {
 
 				return( uploader.state === plupload.STARTED );
-
-			}
-
-
-
-
-
-
-
-
-			// I take the given File object (as presented by
-			// Plupoload), and show the client-side-only preview of
-			// the selected image object.
-			function showImagePreview( file ) {
-
-				var item = $( "<li></li>" ).prependTo( dom.uploads );
-				var image = $( new Image() ).appendTo( item );
-
-				// Create an instance of the mOxie Image object. This
-				// utility object provides several means of reading in
-				// and loading image data from various sources.
-				// --
-				// Wiki: https://github.com/moxiecode/moxie/wiki/Image
-				var preloader = new mOxie.Image();
-
-				// Define the onload BEFORE you execute the load()
-				// command as load() does not execute async.
-				preloader.onload = function() {
-
-				// This will scale the image (in memory) before it
-				// tries to render it. This just reduces the amount
-				// of Base64 data that needs to be rendered.
-				preloader.downsize( 100, 100 );
-
-				// Now that the image is preloaded, grab the Base64
-				// encoded data URL. This will show the image
-				// without making an Network request using the
-				// client-side file binary.
-				image.prop( "src", preloader.getAsDataURL() );
-
-				// NOTE: These previews "work" in the FLASH runtime.
-				// But, they look seriously junky-to-the-monkey.
-				// Looks like they are only using like 256 colors.
-
-				};
-
-				// Calling the .getSource() on the file will return an
-				// instance of mOxie.File, which is a unified file
-				// wrapper that can be used across the various runtimes.
-				// --
-				// Wiki: https://github.com/moxiecode/plupload/wiki/File
-				preloader.load( file.getSource() );
 
 			}
 

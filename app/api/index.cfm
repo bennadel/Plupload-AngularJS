@@ -12,6 +12,17 @@
 
 		param name="url.action" type="string";
 
+		// By default, AngularJS posts content as JSON, as opposed to form data. To 
+		// make the API a bit easier to work with, I'm going to ASSUME that this is
+		// always in struct format and just append it to the form.
+		requestBody = toString( getHTTPRequestData().content );
+
+		if ( isJson( requestBody ) ) {
+
+			structAppend( form, deserializeJson( requestBody ) );
+
+		}
+
 		// Route the proper controller.
 		switch ( url.action ) {
 
@@ -40,8 +51,8 @@
 		response.statusCode = 500;
 		response.statusText = "Server Error";
 		response.data = {
-			code = -1,
-			message = "Something went wrong - #error.message# - #serializeJson( duplicate( error ) )#"
+			"code" = -1,
+			"message" = "Something went wrong - #error.message# - #serializeJson( duplicate( error ) )#"
 		};
 
 	}
