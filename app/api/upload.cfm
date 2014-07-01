@@ -31,6 +31,6 @@
 		"url" = "#application.baseImageUrl##urlEncodedFormat( image.serverFile )#"
 	};
 
-	sleep( 1000 );
+	// sleep( 1000 );
 
 </cfscript>
