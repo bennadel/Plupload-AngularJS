@@ -1,5 +1,5 @@
 
-# Using Plupload With AngularJS
+# Using Plupload To Upload Files In AngularJS
 
 by [Ben Nadel][bennadel] (on [Google+][googleplus])
 
